@@ -250,12 +250,30 @@
             padding: 0;
             cursor: pointer;
             color: #999;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0;
             display: block;
         }
 
         .back-btn:hover {
             color: #000;
+        }
+
+        .add-system-btn {
+            font-family: monospace;
+            font-size: .8rem;
+            border: 1px solid #a0c4ff;
+            background: #e8f1ff;
+            color: #004494;
+            padding: .4rem .8rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 1rem;
+        }
+
+        .add-system-btn:hover {
+            border-color: #004494;
+            background: #d0e6ff;
         }
 
         .detail-name {
@@ -382,9 +400,11 @@
 
     <!-- LIST PAGE -->
     <div id="list-page">
-        <h1>Physical Computing</h1>
         <p class="subtitle">An ontology of physical systems that realize mathematical functions. Each entry answers:
-            f(x) = ? and under what conditions.</p>
+            f(x) = ? and under what conditions. <a href="https://github.com/TugdualKerjan/ComputingOntology"
+                target="_blank" rel="noopener"
+                style="color: #004494; text-decoration: none; border-bottom: 1px solid #a0c4ff;">Contribute more systems
+                via GitHub PR</a>.</p>
 
         <hr class="divider">
 
@@ -413,7 +433,11 @@
 
     <!-- DETAIL PAGE -->
     <div id="detail-page">
-        <button class="back-btn" id="back-btn">← back to list</button>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <button class="back-btn" id="back-btn">← back to list</button>
+            <a href="https://github.com/TugdualKerjan/ComputingOntology/compare" target="_blank" rel="noopener"
+                class="add-system-btn">+ Add system</a>
+        </div>
         <div id="detail-content"></div>
     </div>
 
@@ -550,8 +574,6 @@
       ${(d.computation_model || []).map(v => `<span class="tag model">${v}</span>`).join('')}
     </div>
     <div class="detail-desc">${d.description}</div>
-    ${d.conditions_of_correctness ? `<div class="detail-section"><h3>Correct when</h3><ul>${d.conditions_of_correctness.map(c => `<li>${c}</li>`).join('')}</ul></div>` : ''}
-    ${d.breaks_when ? `<div class="detail-section"><h3>Breaks when</h3><p>${d.breaks_when}</p></div>` : ''}
     ${exHtml}
     ${diyHtml}
   `;
