@@ -412,6 +412,11 @@
         <div class="filter-row"><span class="dim-label">determinism</span><select id="sel-determinism"></select></div>
         <div class="filter-row"><span class="dim-label">exactness</span><select id="sel-exactness"></select></div>
         <div class="filter-row"><span class="dim-label">operation</span><select id="sel-operation"></select></div>
+        <div class="filter-row"><span class="dim-label">energy/op</span><select id="sel-energy_per_operation"></select></div>
+        <div class="filter-row"><span class="dim-label">model</span><select id="sel-computation_model"></select></div>
+        <div class="filter-row"><span class="dim-label">speed</span><select id="sel-speed_category"></select></div>
+        <div class="filter-row"><span class="dim-label">scale</span><select id="sel-scale_category"></select></div>
+        <div class="filter-row"><span class="dim-label">programming</span><select id="sel-programming_model"></select></div>
         <div class="filter-row">
             <input id="filter-text" placeholder="Filter by name, realizes, description…">
             <button class="reset" id="reset-all">✕ reset</button>
@@ -425,7 +430,7 @@
     <div id="detail-page">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
             <button class="back-btn" id="back-btn">← back to list</button>
-            <a href="https://github.com/TugdualKerjan/ComputingOntology/compare" target="_blank" rel="noopener"
+            <a href="https://github.com/TugdualKerjan/ComputingOntology/issues/new?template=new_system.md" target="_blank" rel="noopener"
                 class="add-system-btn">+ Add system</a>
         </div>
         <div id="detail-content"></div>
@@ -460,13 +465,18 @@
             }
         }
 
-        const activeFilters = { substrate: '', determinism: '', exactness: '', operation: '' };
+        const activeFilters = { substrate: '', determinism: '', exactness: '', operation: '', energy_per_operation: '', computation_model: '', speed_category: '', scale_category: '', programming_model: '' };
         let textQuery = '';
 
         function vocab(dim) {
             const vals = new Set();
             data.forEach(d => {
-                const v = d[dim === 'operation' ? 'operations' : dim];
+                let v;
+                if (dim === 'operation') v = d.operations;
+                else if (dim === 'computation_model') v = d.computation_model;
+                else if (dim === 'programming_model') v = d.programming_model;
+                else v = d[dim];
+
                 if (Array.isArray(v)) v.forEach(x => vals.add(x));
                 else if (v) vals.add(v);
             });
@@ -474,7 +484,7 @@
         }
 
         function buildFilters() {
-            ['substrate', 'determinism', 'exactness', 'operation'].forEach(dim => {
+            ['substrate', 'determinism', 'exactness', 'operation', 'energy_per_operation', 'computation_model', 'speed_category', 'scale_category', 'programming_model'].forEach(dim => {
                 const sel = document.getElementById(`sel-${dim}`);
                 const cur = activeFilters[dim];
                 sel.innerHTML = '<option value="">— all —</option>';
@@ -499,6 +509,11 @@
                 if (activeFilters.determinism && d.determinism !== activeFilters.determinism) return false;
                 if (activeFilters.exactness && d.exactness !== activeFilters.exactness) return false;
                 if (activeFilters.operation && !(d.operations || []).includes(activeFilters.operation)) return false;
+                if (activeFilters.energy_per_operation && d.energy_per_operation !== activeFilters.energy_per_operation) return false;
+                if (activeFilters.computation_model && !(d.computation_model || []).includes(activeFilters.computation_model)) return false;
+                if (activeFilters.speed_category && d.speed_category !== activeFilters.speed_category) return false;
+                if (activeFilters.scale_category && d.scale_category !== activeFilters.scale_category) return false;
+                if (activeFilters.programming_model && !(d.programming_model || []).includes(activeFilters.programming_model)) return false;
                 if (textQuery) {
                     const hay = [d.name, d.realizes, d.description].join(' ').toLowerCase();
                     if (!hay.includes(textQuery.toLowerCase())) return false;

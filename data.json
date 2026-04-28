@@ -17,8 +17,12 @@
     ],
     "exactness": "exact",
     "realization_type": "variational",
-    "speed": "instantaneous (static equilibrium)",
-    "compute_capacity": "single function evaluation (hyperbolic cosine)"
+    "speed_category": "instantaneous",
+    "speed_notes": "instantaneous (static equilibrium)",
+    "scale_category": "single-op",
+    "compute_capacity_notes": "single function evaluation (hyperbolic cosine)",
+    "energy_per_operation": "~1 J (mechanical)",
+    "programming_model": ["physical-setup"]
   },
   {
     "id": "soap-film",
@@ -38,8 +42,12 @@
     ],
     "exactness": "exact",
     "realization_type": "variational",
-    "speed": "seconds to minutes (surface tension equilibration)",
-    "compute_capacity": "continuous optimization over infinite-dimensional space"
+    "speed_category": "minutes",
+    "speed_notes": "seconds to minutes (surface tension equilibration)",
+    "scale_category": "unbounded",
+    "compute_capacity_notes": "continuous optimization over infinite-dimensional space",
+    "energy_per_operation": "~1 mJ (surface tension)",
+    "programming_model": ["physical-setup"]
   },
   {
     "id": "marble-adder",
@@ -64,8 +72,10 @@
     ],
     "exactness": "exact",
     "realization_type": "procedural",
-    "speed": "~1-10 seconds per operation (marble transit time)",
-    "compute_capacity": "3-8 bit operations (modular, expandable)",
+    "speed_category": "seconds",
+    "speed_notes": "~1-10 seconds per operation (marble transit time)",
+    "scale_category": "small",
+    "compute_capacity_notes": "3-8 bit operations (modular, expandable)",
     "diy": [
       {
         "url": "https://binarymarbles.weebly.com/build-your-own.html",
@@ -104,7 +114,9 @@
         "label": "K'NEX marble logic gates",
         "description": "Individual K'NEX marble logic gate designs showing AND, OR operations with snap-fit modular construction"
       }
-    ]
+    ],
+    "energy_per_operation": "~1 J (gravitational potential)",
+    "programming_model": ["direct-program"]
   },
   {
     "id": "domino-logic",
@@ -126,14 +138,18 @@
     ],
     "exactness": "exact",
     "realization_type": "procedural",
-    "speed": "~1 domino per second propagation (~10-50 seconds total)",
-    "compute_capacity": "single boolean expression evaluation (one-shot)",
+    "speed_category": "seconds",
+    "speed_notes": "~1 domino per second propagation (~10-50 seconds total)",
+    "scale_category": "single-op",
+    "compute_capacity_notes": "single boolean expression evaluation (one-shot)",
     "examples": [
       {
         "url": "https://www.youtube.com/watch?v=OpLU__bhu2w",
         "label": "Matt Parker — domino binary adder"
       }
-    ]
+    ],
+    "energy_per_operation": "~1 mJ (kinetic)",
+    "programming_model": ["physical-setup"]
   },
   {
     "id": "galton-board",
@@ -153,8 +169,12 @@
     ],
     "exactness": "exact-in-limit",
     "realization_type": "statistical",
-    "speed": "minutes to hours (depending on ball count)",
-    "compute_capacity": "statistical sampling (scales with number of balls)"
+    "speed_category": "hours",
+    "speed_notes": "minutes to hours (depending on ball count)",
+    "scale_category": "medium",
+    "compute_capacity_notes": "statistical sampling (scales with number of balls)",
+    "energy_per_operation": "~1 mJ (kinetic)",
+    "programming_model": ["physical-setup"]
   },
   {
     "id": "slime-mold",
@@ -174,8 +194,12 @@
     ],
     "exactness": "heuristic",
     "realization_type": "statistical",
-    "speed": "hours to days (biological growth/optimization)",
-    "compute_capacity": "network optimization problems with ~10-100 nodes"
+    "speed_category": "days",
+    "speed_notes": "hours to days (biological growth/optimization)",
+    "scale_category": "medium",
+    "compute_capacity_notes": "network optimization problems with ~10-100 nodes",
+    "energy_per_operation": "~1 μJ (biochemical)",
+    "programming_model": ["evolutionary"]
   },
   {
     "id": "analog-annealing",
@@ -196,8 +220,12 @@
     ],
     "exactness": "exact-in-limit",
     "realization_type": "statistical",
-    "speed": "minutes to hours (depends on cooling schedule)",
-    "compute_capacity": "global optimization problems (scales exponentially with problem size)"
+    "speed_category": "hours",
+    "speed_notes": "minutes to hours (depends on cooling schedule)",
+    "scale_category": "large",
+    "compute_capacity_notes": "global optimization problems (scales exponentially with problem size)",
+    "energy_per_operation": "~1 fJ (thermal)",
+    "programming_model": ["analog-patch"]
   },
   {
     "id": "slide-rule",
@@ -220,8 +248,12 @@
     ],
     "exactness": "approximate",
     "realization_type": "analogical",
-    "speed": "seconds (human reading time)",
-    "compute_capacity": "single arithmetic operation (3 significant figures)"
+    "speed_category": "seconds",
+    "speed_notes": "seconds (human reading time)",
+    "scale_category": "single-op",
+    "compute_capacity_notes": "single arithmetic operation (3 significant figures)",
+    "energy_per_operation": "~1 J (mechanical)",
+    "programming_model": ["analog-patch"]
   },
   {
     "id": "billiard-ball",
@@ -244,8 +276,12 @@
     ],
     "exactness": "exact",
     "realization_type": "procedural",
-    "speed": "nanoseconds to microseconds (ball velocity dependent)",
-    "compute_capacity": "arbitrary boolean circuits (theoretically universal)"
+    "speed_category": "seconds",
+    "speed_notes": "nanoseconds to microseconds (ball velocity dependent)",
+    "scale_category": "unbounded",
+    "compute_capacity_notes": "arbitrary boolean circuits (theoretically universal)",
+    "energy_per_operation": "~1 pJ (kinetic)",
+    "programming_model": ["compile-to-physics"]
   },
   {
     "id": "moniac",
@@ -267,8 +303,10 @@
     ],
     "exactness": "approximate",
     "realization_type": "analogical",
-    "speed": "minutes to hours (hydraulic equilibration)",
-    "compute_capacity": "~10-20 economic variables (limited by physical plumbing)",
+    "speed_category": "hours",
+    "speed_notes": "minutes to hours (hydraulic equilibration)",
+    "scale_category": "small",
+    "compute_capacity_notes": "~10-20 economic variables (limited by physical plumbing)",
     "examples": [
       {
         "url": "https://en.wikipedia.org/wiki/Phillips_Machine",
@@ -282,6 +320,227 @@
         "url": "https://www.youtube.com/watch?v=89sPO7jqJpU",
         "label": "roons - MONIAC overview"
       }
-    ]
+    ],
+    "energy_per_operation": "~1 J (hydraulic)",
+    "programming_model": ["analog-patch"]
+  },
+  {
+    "id": "thermodynamic-computer",
+    "name": "Thermodynamic computer",
+    "realizes": "sampling from Boltzmann distributions",
+    "description": "Uses thermal noise in analog circuits to sample from Boltzmann distributions. Thermal fluctuations provide natural randomness that follows statistical mechanics principles. The Normal Computing SDE (Stochastic Differential Equation) approach leverages this thermal noise for computation.",
+    "substrate": [
+      "electronic",
+      "thermodynamic"
+    ],
+    "computation_model": [
+      "stochastic-process"
+    ],
+    "determinism": "stochastic",
+    "reversibility": "irreversible",
+    "operations": [
+      "SAMPLE"
+    ],
+    "exactness": "exact-in-limit",
+    "realization_type": "statistical",
+    "speed_category": "seconds",
+    "speed_notes": "microseconds to milliseconds (thermal equilibration)",
+    "scale_category": "medium",
+    "compute_capacity_notes": "probabilistic sampling problems (scales with circuit complexity)",
+    "energy_per_operation": "~1 fJ (thermal)",
+    "programming_model": ["analog-patch"]
+  },
+  {
+    "id": "quantum-gate-computer",
+    "name": "Quantum gate computer (superconducting qubits)",
+    "realizes": "unitary transformations / quantum algorithms",
+    "description": "Superconducting qubits manipulated by microwave pulses to perform unitary operations. Quantum gates like Hadamard, CNOT, and phase gates enable quantum algorithms such as Shor's factoring and Grover's search.",
+    "substrate": [
+      "quantum",
+      "electronic"
+    ],
+    "computation_model": [
+      "quantum-circuit"
+    ],
+    "determinism": "deterministic",
+    "reversibility": "reversible",
+    "operations": [
+      "HADAMARD",
+      "CNOT",
+      "PHASE",
+      "PAULI-X",
+      "PAULI-Y",
+      "PAULI-Z"
+    ],
+    "exactness": "exact",
+    "realization_type": "procedural",
+    "speed_category": "seconds",
+    "speed_notes": "nanoseconds to microseconds (gate operations)",
+    "scale_category": "unbounded",
+    "compute_capacity_notes": "exponential in qubit count (theoretical universal quantum computation)",
+    "energy_per_operation": "~1 aJ (quantum)",
+    "programming_model": ["compile-to-physics"]
+  },
+  {
+    "id": "quantum-annealer",
+    "name": "Quantum annealer (D-Wave style)",
+    "realizes": "Ising model energy minimization",
+    "description": "Adiabatic quantum computation using quantum annealing to find ground states of Ising Hamiltonians. D-Wave systems use superconducting flux qubits in a specific connectivity graph to solve optimization problems.",
+    "substrate": [
+      "quantum",
+      "electronic"
+    ],
+    "computation_model": [
+      "adiabatic-quantum"
+    ],
+    "determinism": "stochastic",
+    "reversibility": "irreversible",
+    "operations": [
+      "MINIMIZE"
+    ],
+    "exactness": "heuristic",
+    "realization_type": "statistical",
+    "speed_category": "seconds",
+    "speed_notes": "microseconds (annealing time)",
+    "scale_category": "large",
+    "compute_capacity_notes": "combinatorial optimization problems (~5000 variables on current hardware)",
+    "energy_per_operation": "~1 aJ (quantum)",
+    "programming_model": ["compile-to-physics"]
+  },
+  {
+    "id": "neuromorphic-chip",
+    "name": "Neuromorphic chip (Intel Loihi / IBM TrueNorth)",
+    "realizes": "spiking neural network computation",
+    "description": "Silicon chips that mimic neural computation using spiking neurons and synaptic connections. Intel Loihi and IBM TrueNorth implement event-driven, asynchronous processing with on-chip learning capabilities.",
+    "substrate": [
+      "electronic"
+    ],
+    "computation_model": [
+      "neural-network"
+    ],
+    "determinism": "stochastic",
+    "reversibility": "irreversible",
+    "operations": [
+      "INTEGRATE-AND-FIRE",
+      "WEIGHTED-SUM",
+      "THRESHOLD"
+    ],
+    "exactness": "approximate",
+    "realization_type": "procedural",
+    "speed_category": "seconds",
+    "speed_notes": "microseconds (spike propagation)",
+    "scale_category": "large",
+    "compute_capacity_notes": "millions of neurons (parallel event-driven processing)",
+    "energy_per_operation": "~1 pJ (CMOS)",
+    "programming_model": ["trained-readout"]
+  },
+  {
+    "id": "memristor-crossbar",
+    "name": "Memristor crossbar",
+    "realizes": "analog matrix-vector multiplication",
+    "description": "Crossbar arrays of memristors (memory resistors) perform matrix-vector operations in analog. Voltages applied to rows, currents collected from columns. Resistance values encode matrix elements. Enables in-memory computing for neural network inference.",
+    "substrate": [
+      "electronic"
+    ],
+    "computation_model": [
+      "analog-continuous"
+    ],
+    "determinism": "deterministic",
+    "reversibility": "irreversible",
+    "operations": [
+      "MULTIPLY",
+      "ADD"
+    ],
+    "exactness": "approximate",
+    "realization_type": "analogical",
+    "speed_category": "seconds",
+    "speed_notes": "nanoseconds (electrical propagation)",
+    "scale_category": "large",
+    "compute_capacity_notes": "large matrix operations (scales with crossbar size)",
+    "energy_per_operation": "~1 fJ (analog)",
+    "programming_model": ["trained-readout"]
+  },
+  {
+    "id": "dna-computer",
+    "name": "DNA computer (Adleman 1994)",
+    "realizes": "Hamiltonian path via strand hybridization",
+    "description": "Leonard Adleman's 1994 demonstration solved the directed Hamiltonian path problem using DNA strand hybridization. Cities encoded as DNA sequences, flight connections as complementary strands. Massively parallel biochemical search.",
+    "substrate": [
+      "biological"
+    ],
+    "computation_model": [
+      "molecular-self-assembly"
+    ],
+    "determinism": "stochastic",
+    "reversibility": "irreversible",
+    "operations": [
+      "SEARCH",
+      "SELECT"
+    ],
+    "exactness": "exact",
+    "realization_type": "procedural",
+    "speed_category": "days",
+    "speed_notes": "hours to days (biochemical reactions)",
+    "scale_category": "medium",
+    "compute_capacity_notes": "combinatorial search problems (limited by DNA synthesis/sequencing)",
+    "energy_per_operation": "~1 aJ (molecular)",
+    "programming_model": ["compile-to-physics"]
+  },
+  {
+    "id": "reservoir-computer",
+    "name": "Reservoir computer",
+    "realizes": "temporal pattern recognition / dynamical system computation",
+    "description": "Fixed nonlinear dynamical system (reservoir) coupled to a trained linear readout layer. Input drives the reservoir dynamics, output layer learns to extract desired computations. Echo state networks and liquid state machines are implementations.",
+    "substrate": [
+      "electronic",
+      "mechanical",
+      "optical"
+    ],
+    "computation_model": [
+      "dynamical-systems"
+    ],
+    "determinism": "deterministic",
+    "reversibility": "irreversible",
+    "operations": [
+      "INTEGRATE",
+      "NONLINEAR-TRANSFORM",
+      "MEMORY"
+    ],
+    "exactness": "approximate",
+    "realization_type": "procedural",
+    "speed_category": "seconds",
+    "speed_notes": "depends on reservoir substrate (microseconds to seconds)",
+    "scale_category": "medium",
+    "compute_capacity_notes": "temporal sequence processing (scales with reservoir size)",
+    "energy_per_operation": "~1 fJ (substrate dependent)",
+    "programming_model": ["trained-readout"]
+  },
+  {
+    "id": "opamp-analog-computer",
+    "name": "Op-amp analog computer",
+    "realizes": "ODE integration via Kirchhoff's laws",
+    "description": "Operational amplifiers configured as integrators, adders, and multipliers solve differential equations in real-time. Voltages represent variables, circuit topology encodes the equation structure. Classical electronic analog computation.",
+    "substrate": [
+      "electronic"
+    ],
+    "computation_model": [
+      "analog-continuous"
+    ],
+    "determinism": "deterministic",
+    "reversibility": "irreversible",
+    "operations": [
+      "INTEGRATE",
+      "ADD",
+      "MULTIPLY",
+      "DIFFERENTIATE"
+    ],
+    "exactness": "approximate",
+    "realization_type": "analogical",
+    "speed_category": "seconds",
+    "speed_notes": "real-time (microseconds to seconds)",
+    "scale_category": "medium",
+    "compute_capacity_notes": "systems of ODEs (~10-100 variables typical)",
+    "energy_per_operation": "~1 nJ (analog electronic)",
+    "programming_model": ["analog-patch"]
   }
 ]
