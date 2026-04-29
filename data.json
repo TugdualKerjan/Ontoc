@@ -1,4 +1,6 @@
-[
+{
+  "$schema": "./schema.json",
+  "data": [
   {
     "id": "catenary",
     "name": "Hanging chain (catenary)",
@@ -90,26 +92,31 @@
     ],
     "examples": [
       {
+        "id": "marble-adder-wooden",
         "url": "https://www.youtube.com/watch?v=G8VldC_8o9k",
         "label": "Marble adding machine in action",
         "description": "Demonstration of a wooden marble adder performing binary arithmetic with gravity-fed marbles and flip-flop gates"
       },
       {
+        "id": "digicomp-ii-demo",
         "url": "https://www.youtube.com/watch?v=hrzIorNgpBU",
         "label": "DigiComp II demonstration",
         "description": "Complete walkthrough of the DigiComp II plastic marble computer, showing binary addition, multiplication, and logic operations"
       },
       {
+        "id": "digicomp-ii-addition",
         "url": "https://www.youtube.com/watch?v=GcDshWmhF4A",
         "label": "DigiComp II binary addition",
         "description": "Focused demonstration of how the DigiComp II performs binary addition using marble-actuated flip-flop gates"
       },
       {
+        "id": "knex-marble-computer",
         "url": "https://www.youtube.com/watch?v=EtIJUwkOAwM",
         "label": "K'NEX binary marble computer",
         "description": "K'NEX construction set used to build a working marble computer with modular logic gates and binary counters"
       },
       {
+        "id": "knex-logic-gates",
         "url": "https://www.youtube.com/watch?v=rdT1YT9AOPA",
         "label": "K'NEX marble logic gates",
         "description": "Individual K'NEX marble logic gate designs showing AND, OR operations with snap-fit modular construction"
@@ -144,6 +151,7 @@
     "compute_capacity_notes": "single boolean expression evaluation (one-shot)",
     "examples": [
       {
+        "id": "domino-binary-adder",
         "url": "https://www.youtube.com/watch?v=OpLU__bhu2w",
         "label": "Matt Parker — domino binary adder"
       }
@@ -309,14 +317,17 @@
     "compute_capacity_notes": "~10-20 economic variables (limited by physical plumbing)",
     "examples": [
       {
+        "id": "phillips-machine-wiki",
         "url": "https://en.wikipedia.org/wiki/Phillips_Machine",
         "label": "Phillips Machine Wikipedia"
       },
       {
+        "id": "moniac-demonstration",
         "url": "https://www.youtube.com/watch?v=gwf5mAlI7Ug",
         "label": "MONIAC hydraulic computer demonstration"
       },
       {
+        "id": "moniac-overview",
         "url": "https://www.youtube.com/watch?v=89sPO7jqJpU",
         "label": "roons - MONIAC overview"
       }
@@ -543,4 +554,5 @@
     "energy_per_operation": "~1 nJ (analog electronic)",
     "programming_model": ["analog-patch"]
   }
-]
+  ]
+}

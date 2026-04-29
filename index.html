@@ -385,6 +385,56 @@
         .toast.error {
             background: #8b0000;
         }
+
+        /* sidebar */
+        .page-with-sidebar {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .category-sidebar {
+            width: 200px;
+            flex-shrink: 0;
+            padding: 1rem;
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            font-size: .75rem;
+        }
+
+        .category-sidebar h4 {
+            margin: 0 0 .5rem 0;
+            font-size: .7rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: #999;
+        }
+
+        .sidebar-tags {
+            display: flex;
+            flex-direction: column;
+            gap: .3rem;
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-tags:last-child {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            .page-with-sidebar {
+                flex-direction: column;
+            }
+            .category-sidebar {
+                width: 100%;
+                order: -1;
+            }
+        }
     </style>
 </head>
 
@@ -396,7 +446,8 @@
             f(x) = ? and under what conditions. <a href="https://github.com/TugdualKerjan/ComputingOntology"
                 target="_blank" rel="noopener"
                 style="color: #004494; text-decoration: none; border-bottom: 1px solid #a0c4ff;">Contribute more systems
-                via GitHub PR</a>.</p>
+                via GitHub PR</a> | <a href="#categories" onclick="showCategories()"
+                style="color: #004494; text-decoration: none; border-bottom: 1px solid #a0c4ff; cursor: pointer;">View categories</a>.</p>
 
         <hr class="divider">
 
@@ -436,6 +487,24 @@
         <div id="detail-content"></div>
     </div>
 
+    <!-- CATEGORIES PAGE -->
+    <div id="categories-page" style="display: none;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <button class="back-btn" id="categories-back-btn">← back to list</button>
+        </div>
+        <h1>Categories</h1>
+        <p class="subtitle">All possible values for each categorical field in the ontology.</p>
+        <div id="categories-content"></div>
+    </div>
+
+    <!-- EXAMPLE PAGE -->
+    <div id="example-page" style="display: none;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <button class="back-btn" id="example-back-btn">← back to system</button>
+        </div>
+        <div id="example-content"></div>
+    </div>
+
     <script>
         function ytId(url) {
             const m = url.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
@@ -447,21 +516,95 @@
         }
 
         let data = [];
+        let categories = {};
+        let schema = {};
 
-        // Load data from external JSON file
-        async function loadData() {
+        // Load all JSON files
+        async function loadAllData() {
             try {
-                const response = await fetch('./data.json');
-                if (!response.ok) throw new Error(`Failed to load data.json: ${response.status}`);
-                data = await response.json();
+                const [dataRes, categoriesRes, schemaRes] = await Promise.all([
+                    fetch('./data.json'),
+                    fetch('./categories.json'),
+                    fetch('./schema.json')
+                ]);
+
+                if (!dataRes.ok) throw new Error(`Failed to load data.json: ${dataRes.status}`);
+                if (!categoriesRes.ok) throw new Error(`Failed to load categories.json: ${categoriesRes.status}`);
+                if (!schemaRes.ok) throw new Error(`Failed to load schema.json: ${schemaRes.status}`);
+
+                const [jsonData, categoriesData, schemaData] = await Promise.all([
+                    dataRes.json(),
+                    categoriesRes.json(),
+                    schemaRes.json()
+                ]);
+
+                data = jsonData.data;
+                categories = categoriesData;
+                schema = schemaData;
+
+                validateCategories();
                 buildFilters();
                 render();
-                showToast('Data loaded successfully', 'success');
+                showToast('All data loaded successfully', 'success');
                 return Promise.resolve();
             } catch (error) {
-                showToast('Error loading data.json: ' + error.message, 'error');
+                if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+                    showToast('For local viewing, serve via: python -m http.server 8000', 'error');
+                } else {
+                    showToast('Error loading files: ' + error.message, 'error');
+                }
                 console.error('Failed to load data:', error);
+                console.log('To view locally, run: python -m http.server 8000');
                 return Promise.reject(error);
+            }
+        }
+
+        // Validate that categories.json matches schema.json enums
+        function validateCategories() {
+            const errors = [];
+
+            // Extract enum values from schema
+            const schemaEnums = {};
+            const dataItems = schema.properties?.data?.items;
+            if (dataItems?.properties) {
+                Object.entries(dataItems.properties).forEach(([key, prop]) => {
+                    if (prop.items?.enum) {
+                        schemaEnums[key] = new Set(prop.items.enum);
+                    } else if (prop.enum) {
+                        schemaEnums[key] = new Set(prop.enum);
+                    }
+                });
+            }
+
+            // Check categories against schema enums
+            Object.entries(categories).forEach(([field, values]) => {
+                if (schemaEnums[field]) {
+                    const schemaSet = schemaEnums[field];
+                    const categorySet = new Set(values);
+
+                    // Check for missing values in categories.json
+                    schemaSet.forEach(val => {
+                        if (!categorySet.has(val)) {
+                            errors.push(`Missing in categories.json[${field}]: ${val}`);
+                        }
+                    });
+
+                    // Check for extra values in categories.json
+                    categorySet.forEach(val => {
+                        if (!schemaSet.has(val)) {
+                            errors.push(`Extra in categories.json[${field}]: ${val}`);
+                        }
+                    });
+                } else if (Object.keys(schemaEnums).length > 0) {
+                    errors.push(`Field ${field} in categories.json but not in schema`);
+                }
+            });
+
+            if (errors.length > 0) {
+                console.warn('Category validation errors:', errors);
+                showToast(`${errors.length} category validation errors (see console)`, 'error');
+            } else {
+                console.log('✓ Categories validation passed');
             }
         }
 
@@ -552,7 +695,7 @@
         ${d.examples.map(e => {
                 const thumb = ytThumb(e.url);
                 const desc = e.description ? `<div style="font-size: .75rem; color: #666; margin-top: .2rem; line-height: 1.4;">${e.description}</div>` : '';
-                return `<li>${thumb ? `<img src="${thumb}" alt="">` : ''}<div><a href="${e.url}" target="_blank" rel="noopener">${e.label}</a>${desc}</div></li>`;
+                return `<li>${thumb ? `<img src="${thumb}" alt="">` : ''}<div><a href="#example/${e.id}" onclick="showExample('${e.id}'); return false;" style="color: #004494; text-decoration: none; border-bottom: 1px solid #a0c4ff;">${e.label}</a> <a href="${e.url}" target="_blank" rel="noopener" style="font-size: .7rem; color: #999; margin-left: .5rem;">↗</a>${desc}</div></li>`;
             }).join('')}
       </ul>
     </div>` : '';
@@ -569,18 +712,16 @@
     </div>` : '';
 
             document.getElementById('detail-content').innerHTML = `
-    <div class="detail-name">${d.name}</div>
-    <div class="detail-realizes">f(x) = ${d.realizes}</div>
-    <div class="detail-tags">
-      ${(d.substrate || []).map(v => `<span class="tag substrate">${v}</span>`).join('')}
-      ${d.determinism ? `<span class="tag determinism">${d.determinism}</span>` : ''}
-      ${d.exactness ? `<span class="tag exactness">${d.exactness}</span>` : ''}
-      ${(d.operations || []).map(v => `<span class="tag operation">${v}</span>`).join('')}
-      ${(d.computation_model || []).map(v => `<span class="tag model">${v}</span>`).join('')}
+    <div class="page-with-sidebar">
+      <div class="main-content">
+        <div class="detail-name">${d.name}</div>
+        <div class="detail-realizes">f(x) = ${d.realizes}</div>
+        <div class="detail-desc">${d.description}</div>
+        ${exHtml}
+        ${diyHtml}
+      </div>
+      ${renderCategorySidebar(d)}
     </div>
-    <div class="detail-desc">${d.description}</div>
-    ${exHtml}
-    ${diyHtml}
   `;
 
             document.getElementById('list-page').style.display = 'none';
@@ -588,13 +729,145 @@
             window.scrollTo(0, 0);
         }
 
+        function showCategories() {
+            window.history.pushState({ page: 'categories' }, 'Categories', '#categories');
+            document.getElementById('list-page').style.display = 'none';
+            document.getElementById('detail-page').style.display = 'none';
+            document.getElementById('categories-page').style.display = 'block';
+            renderCategories();
+            window.scrollTo(0, 0);
+        }
+
+        function renderCategories() {
+            const content = Object.entries(categories).map(([field, values]) => `
+                <div class="detail-section">
+                    <h3>${field.replace(/_/g, ' ')}</h3>
+                    <div style="display: flex; flex-wrap: wrap; gap: .3rem;">
+                        ${values.map(val => `<span class="tag ${getTagClass(field)}">${val}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('categories-content').innerHTML = content;
+        }
+
+        function getTagClass(field) {
+            if (field === 'substrate') return 'substrate';
+            if (field === 'determinism' || field === 'reversibility') return 'determinism';
+            if (field === 'exactness') return 'exactness';
+            if (field === 'operations') return 'operation';
+            return 'model';
+        }
+
+        function renderCategorySidebar(system) {
+            const categoryData = [
+                { label: 'Substrate', field: 'substrate', values: system.substrate },
+                { label: 'Model', field: 'computation_model', values: system.computation_model },
+                { label: 'Determinism', field: 'determinism', values: [system.determinism] },
+                { label: 'Reversibility', field: 'reversibility', values: [system.reversibility] },
+                { label: 'Exactness', field: 'exactness', values: [system.exactness] },
+                { label: 'Operations', field: 'operations', values: system.operations },
+                { label: 'Speed', field: 'speed_category', values: [system.speed_category] },
+                { label: 'Scale', field: 'scale_category', values: [system.scale_category] },
+                { label: 'Programming', field: 'programming_model', values: system.programming_model }
+            ].filter(cat => cat.values && cat.values.length > 0);
+
+            return `
+                <div class="category-sidebar">
+                    <h4>Categories</h4>
+                    ${categoryData.map(cat => `
+                        <div class="sidebar-tags">
+                            <strong style="font-size: .65rem; color: #666; margin-bottom: .2rem; display: block;">${cat.label}</strong>
+                            ${cat.values.map(val => `<span class="tag ${getTagClass(cat.field)}">${val}</span>`).join('')}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function showExample(exampleId) {
+            // Find the example across all systems
+            let foundExample = null;
+            let parentSystem = null;
+
+            for (const system of data) {
+                if (system.examples) {
+                    const example = system.examples.find(ex => ex.id === exampleId);
+                    if (example) {
+                        foundExample = example;
+                        parentSystem = system;
+                        break;
+                    }
+                }
+            }
+
+            if (!foundExample || !parentSystem) {
+                showToast('Example not found', 'error');
+                return;
+            }
+
+            window.history.pushState({ exampleId }, foundExample.label, `#example/${exampleId}`);
+
+            const thumb = ytThumb(foundExample.url);
+            const embedId = ytId(foundExample.url);
+            const embedHtml = embedId ? `
+                <div style="margin: 1rem 0;">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/${embedId}"
+                            frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen style="max-width: 100%; height: auto;"></iframe>
+                </div>
+            ` : '';
+
+            document.getElementById('example-content').innerHTML = `
+                <div class="page-with-sidebar">
+                    <div class="main-content">
+                        <div style="margin-bottom: 1rem;">
+                            <span style="font-size: .8rem; color: #666;">Example from: </span>
+                            <a href="#${parentSystem.id}" onclick="showDetail('${parentSystem.id}'); return false;"
+                               style="color: #004494; text-decoration: none; border-bottom: 1px solid #a0c4ff;">${parentSystem.name}</a>
+                        </div>
+                        <div class="detail-name">${foundExample.label}</div>
+                        ${foundExample.description ? `<div class="detail-desc">${foundExample.description}</div>` : ''}
+                        ${embedHtml}
+                        <div class="detail-section">
+                            <h3>External Link</h3>
+                            <p><a href="${foundExample.url}" target="_blank" rel="noopener">${foundExample.url}</a></p>
+                        </div>
+                    </div>
+                    ${renderCategorySidebar(parentSystem)}
+                </div>
+            `;
+
+            document.getElementById('list-page').style.display = 'none';
+            document.getElementById('detail-page').style.display = 'none';
+            document.getElementById('categories-page').style.display = 'none';
+            document.getElementById('example-page').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
         function showList() {
             window.history.pushState({}, 'Physical Computing', window.location.pathname);
             document.getElementById('detail-page').style.display = 'none';
+            document.getElementById('categories-page').style.display = 'none';
+            document.getElementById('example-page').style.display = 'none';
             document.getElementById('list-page').style.display = 'block';
         }
 
+        function showDetailFromExample(systemId) {
+            showDetail(systemId);
+        }
+
         document.getElementById('back-btn').onclick = showList;
+        document.getElementById('categories-back-btn').onclick = showList;
+        document.getElementById('example-back-btn').onclick = () => {
+            // Go back to the parent system if possible
+            const hash = window.location.hash;
+            if (hash.includes('example/')) {
+                // Try to find parent system and go there
+                window.history.back();
+            } else {
+                showList();
+            }
+        };
 
         function showToast(msg, type = '') {
             const t = document.createElement('div');
@@ -616,6 +889,17 @@
 
         function handleRoute() {
             const hash = window.location.hash.slice(1);
+            if (hash === 'categories') {
+                showCategories();
+                return;
+            }
+            if (hash.startsWith('example/')) {
+                const exampleId = hash.substring(8); // Remove 'example/'
+                if (exampleId && data.length > 0) {
+                    showExample(exampleId);
+                    return;
+                }
+            }
             if (hash && data.length > 0) {
                 const entry = data.find(d => d.id === hash);
                 if (entry) {
@@ -630,7 +914,7 @@
         window.addEventListener('popstate', handleRoute);
 
         // Initialize the application
-        loadData().then(() => {
+        loadAllData().then(() => {
             handleRoute();
         });
     </script>

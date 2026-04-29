@@ -1,0 +1,97 @@
+{
+  "substrate": [
+    "mechanical",
+    "fluidics",
+    "biological",
+    "thermodynamic",
+    "electronic",
+    "quantum",
+    "optical"
+  ],
+  "computation_model": [
+    "variational",
+    "register-machine",
+    "finite-automaton",
+    "stochastic-process",
+    "analog-continuous",
+    "reversible-computation",
+    "quantum-circuit",
+    "adiabatic-quantum",
+    "neural-network",
+    "molecular-self-assembly",
+    "dynamical-systems",
+    "none"
+  ],
+  "determinism": [
+    "deterministic",
+    "stochastic"
+  ],
+  "reversibility": [
+    "reversible",
+    "irreversible"
+  ],
+  "operations": [
+    "MINIMIZE",
+    "ADD",
+    "MULTIPLY",
+    "DIVIDE",
+    "AND",
+    "OR",
+    "NOT",
+    "SHIFT",
+    "SAMPLE",
+    "LOG",
+    "ROOT",
+    "FANOUT",
+    "INTEGRATE",
+    "MULTIPLY-by-constant",
+    "HADAMARD",
+    "CNOT",
+    "PHASE",
+    "PAULI-X",
+    "PAULI-Y",
+    "PAULI-Z",
+    "INTEGRATE-AND-FIRE",
+    "WEIGHTED-SUM",
+    "THRESHOLD",
+    "SEARCH",
+    "SELECT",
+    "NONLINEAR-TRANSFORM",
+    "MEMORY",
+    "DIFFERENTIATE"
+  ],
+  "exactness": [
+    "exact",
+    "approximate",
+    "exact-in-limit",
+    "heuristic"
+  ],
+  "realization_type": [
+    "variational",
+    "procedural",
+    "statistical",
+    "analogical"
+  ],
+  "speed_category": [
+    "instantaneous",
+    "seconds",
+    "minutes",
+    "hours",
+    "days"
+  ],
+  "scale_category": [
+    "single-op",
+    "small",
+    "medium",
+    "large",
+    "unbounded"
+  ],
+  "programming_model": [
+    "physical-setup",
+    "direct-program",
+    "evolutionary",
+    "analog-patch",
+    "compile-to-physics",
+    "trained-readout"
+  ]
+}
