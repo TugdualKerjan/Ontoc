@@ -467,7 +467,6 @@
         <div class="filter-row"><span class="dim-label">model</span><select id="sel-computation_model"></select></div>
         <div class="filter-row"><span class="dim-label">speed</span><select id="sel-speed_category"></select></div>
         <div class="filter-row"><span class="dim-label">scale</span><select id="sel-scale_category"></select></div>
-        <div class="filter-row"><span class="dim-label">programming</span><select id="sel-programming_model"></select></div>
         <div class="filter-row">
             <input id="filter-text" placeholder="Filter by name, realizes, description…">
             <button class="reset" id="reset-all">✕ reset</button>
@@ -501,6 +500,8 @@
     <div id="example-page" style="display: none;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
             <button class="back-btn" id="example-back-btn">← back to system</button>
+            <a href="https://github.com/TugdualKerjan/ComputingOntology/issues/new?template=new_system.md" target="_blank" rel="noopener"
+                class="add-system-btn">+ Add system</a>
         </div>
         <div id="example-content"></div>
     </div>
@@ -608,7 +609,7 @@
             }
         }
 
-        const activeFilters = { substrate: '', determinism: '', exactness: '', operation: '', energy_per_operation: '', computation_model: '', speed_category: '', scale_category: '', programming_model: '' };
+        const activeFilters = { substrate: '', determinism: '', exactness: '', operation: '', energy_per_operation: '', computation_model: '', speed_category: '', scale_category: '' };
         let textQuery = '';
 
         function vocab(dim) {
@@ -617,7 +618,6 @@
                 let v;
                 if (dim === 'operation') v = d.operations;
                 else if (dim === 'computation_model') v = d.computation_model;
-                else if (dim === 'programming_model') v = d.programming_model;
                 else v = d[dim];
 
                 if (Array.isArray(v)) v.forEach(x => vals.add(x));
@@ -627,7 +627,7 @@
         }
 
         function buildFilters() {
-            ['substrate', 'determinism', 'exactness', 'operation', 'energy_per_operation', 'computation_model', 'speed_category', 'scale_category', 'programming_model'].forEach(dim => {
+            ['substrate', 'determinism', 'exactness', 'operation', 'energy_per_operation', 'computation_model', 'speed_category', 'scale_category'].forEach(dim => {
                 const sel = document.getElementById(`sel-${dim}`);
                 const cur = activeFilters[dim];
                 sel.innerHTML = '<option value="">— all —</option>';
@@ -656,7 +656,6 @@
                 if (activeFilters.computation_model && !(d.computation_model || []).includes(activeFilters.computation_model)) return false;
                 if (activeFilters.speed_category && d.speed_category !== activeFilters.speed_category) return false;
                 if (activeFilters.scale_category && d.scale_category !== activeFilters.scale_category) return false;
-                if (activeFilters.programming_model && !(d.programming_model || []).includes(activeFilters.programming_model)) return false;
                 if (textQuery) {
                     const hay = [d.name, d.realizes, d.description].join(' ').toLowerCase();
                     if (!hay.includes(textQuery.toLowerCase())) return false;
@@ -725,6 +724,8 @@
   `;
 
             document.getElementById('list-page').style.display = 'none';
+            document.getElementById('categories-page').style.display = 'none';
+            document.getElementById('example-page').style.display = 'none';
             document.getElementById('detail-page').style.display = 'block';
             window.scrollTo(0, 0);
         }
@@ -767,8 +768,7 @@
                 { label: 'Exactness', field: 'exactness', values: [system.exactness] },
                 { label: 'Operations', field: 'operations', values: system.operations },
                 { label: 'Speed', field: 'speed_category', values: [system.speed_category] },
-                { label: 'Scale', field: 'scale_category', values: [system.scale_category] },
-                { label: 'Programming', field: 'programming_model', values: system.programming_model }
+                { label: 'Scale', field: 'scale_category', values: [system.scale_category] }
             ].filter(cat => cat.values && cat.values.length > 0);
 
             return `
@@ -859,14 +859,24 @@
         document.getElementById('back-btn').onclick = showList;
         document.getElementById('categories-back-btn').onclick = showList;
         document.getElementById('example-back-btn').onclick = () => {
-            // Go back to the parent system if possible
-            const hash = window.location.hash;
-            if (hash.includes('example/')) {
-                // Try to find parent system and go there
-                window.history.back();
-            } else {
-                showList();
+            // Find the parent system and navigate to it
+            const hash = window.location.hash.slice(1);
+            if (hash.startsWith('example/')) {
+                const exampleId = hash.substring(8); // Remove 'example/'
+
+                // Find which system this example belongs to
+                for (const system of data) {
+                    if (system.examples) {
+                        const example = system.examples.find(ex => ex.id === exampleId);
+                        if (example) {
+                            showDetail(system.id);
+                            return;
+                        }
+                    }
+                }
             }
+            // Fallback to list if we can't find the parent system
+            showList();
         };
 
         function showToast(msg, type = '') {

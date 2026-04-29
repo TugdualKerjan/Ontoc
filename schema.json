@@ -47,21 +47,29 @@
         "items": {
           "type": "string",
           "enum": [
-            "variational",
+            "finite-state-machine",
+            "pushdown-automaton",
             "register-machine",
-            "finite-automaton",
-            "stochastic-process",
-            "analog-continuous",
-            "reversible-computation",
-            "quantum-circuit",
-            "adiabatic-quantum",
-            "neural-network",
-            "molecular-self-assembly",
-            "dynamical-systems",
-            "none"
+            "random-access-machine",
+            "turing-machine",
+            "decision-tree",
+            "external-memory-model",
+            "abstract-rewriting-system",
+            "combinatory-logic",
+            "general-recursive-function",
+            "lambda-calculus",
+            "actor-model",
+            "cellular-automaton",
+            "interaction-nets",
+            "kahn-process-networks",
+            "logic-gates",
+            "digital-circuits",
+            "petri-nets",
+            "process-calculus",
+            "synchronous-data-flow"
           ]
         },
-        "description": "Computational model(s) being used"
+        "description": "Computational model(s) based on Wikipedia taxonomy"
       },
       "determinism": {
         "type": "string",
@@ -141,22 +149,7 @@
       "energy_per_operation": {
         "type": "string",
         "description": "Energy consumption per operation"
-      },
-      "programming_model": {
-        "type": "array",
-        "items": {
-          "type": "string",
-          "enum": [
-            "physical-setup",
-            "direct-program",
-            "evolutionary",
-            "analog-patch",
-            "compile-to-physics",
-            "trained-readout"
-          ]
-        },
-        "description": "Programming model(s) used to configure the system"
-      },
+},
       "diy": {
         "type": "array",
         "items": {
@@ -201,8 +194,7 @@
       "realization_type",
       "speed_category",
       "scale_category",
-      "energy_per_operation",
-      "programming_model"
+      "energy_per_operation"
     ],
     "additionalProperties": false
       }

@@ -9,18 +9,26 @@
     "optical"
   ],
   "computation_model": [
-    "variational",
+    "finite-state-machine",
+    "pushdown-automaton",
     "register-machine",
-    "finite-automaton",
-    "stochastic-process",
-    "analog-continuous",
-    "reversible-computation",
-    "quantum-circuit",
-    "adiabatic-quantum",
-    "neural-network",
-    "molecular-self-assembly",
-    "dynamical-systems",
-    "none"
+    "random-access-machine",
+    "turing-machine",
+    "decision-tree",
+    "external-memory-model",
+    "abstract-rewriting-system",
+    "combinatory-logic",
+    "general-recursive-function",
+    "lambda-calculus",
+    "actor-model",
+    "cellular-automaton",
+    "interaction-nets",
+    "kahn-process-networks",
+    "logic-gates",
+    "digital-circuits",
+    "petri-nets",
+    "process-calculus",
+    "synchronous-data-flow"
   ],
   "determinism": [
     "deterministic",
@@ -85,13 +93,5 @@
     "medium",
     "large",
     "unbounded"
-  ],
-  "programming_model": [
-    "physical-setup",
-    "direct-program",
-    "evolutionary",
-    "analog-patch",
-    "compile-to-physics",
-    "trained-readout"
   ]
 }
