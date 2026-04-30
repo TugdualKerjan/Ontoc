@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category_display_name }} - Ontology of Computing{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="breadcrumb">
+        <a href="/">Home</a> / <span>{{ category_display_name }}</span>
+    </div>
+
+    <article class="substrate-detail">
+        <header>
+            <h1>{{ category_display_name }}</h1>
+            <p class="description">All systems with {{ property_name.replace('_', ' ') }}: {{ property_value }}</p>
+        </header>
+
+        <section class="systems">
+            <h2>Systems ({{ systems|length }})</h2>
+            {% if systems %}
+            <div class="systems-grid">
+                {% for system in systems %}
+                <div class="system-card">
+                    <h3><a href="/ontoc/systems/{{ system.id }}">{{ system.name }}</a></h3>
+                    {% if system.realizes %}
+                    <p class="realizes">f(x) = {{ system.realizes }}</p>
+                    {% endif %}
+                    {% if system.description %}
+                    <p class="description">{{ system.description[:200] + "..." if system.description|length > 200 else system.description }}</p>
+                    {% endif %}
+
+                    <div class="system-properties">
+                        {% if system.determinism %}
+                        <span class="property-tag">{{ system.determinism }}</span>
+                        {% endif %}
+                        {% if system.reversibility %}
+                        <span class="property-tag">{{ system.reversibility }}</span>
+                        {% endif %}
+                        {% if system.exactness %}
+                        <span class="property-tag">{{ system.exactness }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No systems found with this property.</p>
+            {% endif %}
+        </section>
+    </article>
+</div>
+{% endblock %}

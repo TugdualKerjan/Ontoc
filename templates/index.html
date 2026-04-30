@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Ontology of Computing{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="display: flex; align-items: top; justify-content: space-between; margin-bottom: 1.5rem;">
+        <div>
+            <p class="subtitle" style="margin-bottom: 0;">A comprehensive catalog of computational systems and their
+                physical realizations</p>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div class="legend">
+            <span class="legend-item"><span class="legend-dot substrate"></span>substrate</span>
+            <span class="legend-item"><span class="legend-dot determinism"></span>determinism</span>
+            <span class="legend-item"><span class="legend-dot exactness"></span>exactness</span>
+            <span class="legend-item"><span class="legend-dot operation"></span>operation</span>
+            <span class="legend-item"><span class="legend-dot model"></span>model</span>
+        </div>
+        <div style="font-size: 0.78rem;">
+            <a href="/categories"
+                style="color: #004494; text-decoration: none; border-bottom: 1px solid #a0c4ff; cursor: pointer;">View
+                categories</a>
+        </div>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="filter-section">
+        <div class="filter-row"><span class="dim-label">substrate</span><select id="sel-substrate"></select></div>
+        <div class="filter-row"><span class="dim-label">determinism</span><select id="sel-determinism"></select></div>
+        <div class="filter-row"><span class="dim-label">exactness</span><select id="sel-exactness"></select></div>
+        <div class="filter-row"><span class="dim-label">model</span><select id="sel-computation_model"></select></div>
+        <div class="filter-row">
+            <input id="filter-text" placeholder="Filter by name, realizes, description…">
+            <button class="reset" id="reset-all">✕ reset</button>
+        </div>
+    </div>
+
+    <div class="count" id="count">{{ systems|length }} systems</div>
+
+    <div class="systems-container">
+        <div id="list">
+            {% for system in systems %}
+            <div class="item"
+                data-substrate="{% if system.substrates %}{% for substrate in system.substrates %}{{ substrate.name }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}"
+                data-determinism="{{ system.determinism or '' }}" data-exactness="{{ system.exactness or '' }}"
+                data-computation_model="{% if system.computation_model %}{% for model in system.computation_model %}{{ model }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}"
+                data-name="{{ system.name }}" data-realizes="{{ system.realizes or '' }}"
+                data-description="{{ system.description or '' }}">
+                <div class="item-header">
+                    <span class="item-name"><a href="/ontoc/systems/{{ system.id }}">{{ system.name }}</a></span>
+                    {% if system.realizes %}
+                    <span class="item-realizes">f(x) = {{ system.realizes }}</span>
+                    {% endif %}
+                </div>
+                {% if system.description %}
+                <div class="item-desc">{{ system.description }}</div>
+                {% endif %}
+                <div class="tags">
+                    {% if system.substrates %}
+                    {% for substrate in system.substrates %}
+                    <a href="/ontoc/substrates/{{ substrate.id }}" class="tag substrate clickable">{{ substrate.name
+                        }}</a>
+                    {% endfor %}
+                    {% endif %}
+                    {% if system.determinism %}
+                    <a href="/ontoc/determinism/{{ system.determinism }}" class="tag determinism clickable">{{
+                        system.determinism }}</a>
+                    {% endif %}
+                    {% if system.exactness %}
+                    <a href="/ontoc/exactness/{{ system.exactness }}" class="tag exactness clickable">{{
+                        system.exactness }}</a>
+                    {% endif %}
+                    {% if system.computation_model %}
+                    {% for model in system.computation_model %}
+                    <a href="/ontoc/computation_model/{{ model }}" class="tag model clickable">{{ model }}</a>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        const activeFilters = { substrate: '', determinism: '', exactness: '', computation_model: '' };
+        let textQuery = '';
+
+        function vocab(dim) {
+            const vals = new Set();
+            document.querySelectorAll('.item').forEach(item => {
+                const value = item.getAttribute(`data-${dim}`);
+                if (value) {
+                    if (value.includes(',')) {
+                        value.split(',').forEach(v => vals.add(v.trim()));
+                    } else {
+                        vals.add(value);
+                    }
+                }
+            });
+            return Array.from(vals).sort();
+        }
+
+        function buildFilters() {
+            ['substrate', 'determinism', 'exactness', 'computation_model'].forEach(dim => {
+                const sel = document.getElementById(`sel-${dim}`);
+                const cur = activeFilters[dim];
+                sel.innerHTML = '<option value="">— all —</option>';
+                vocab(dim).forEach(v => {
+                    const o = document.createElement('option');
+                    o.value = v;
+                    o.textContent = v;
+                    if (v === cur) o.selected = true;
+                    sel.appendChild(o);
+                });
+                sel.classList.toggle('active', !!cur);
+                sel.onchange = () => {
+                    activeFilters[dim] = sel.value;
+                    sel.classList.toggle('active', !!sel.value);
+                    render();
+                };
+            });
+        }
+
+        function render() {
+            const items = document.querySelectorAll('.item');
+            let visibleCount = 0;
+
+            items.forEach(item => {
+                let visible = true;
+
+                // Check filters
+                if (activeFilters.substrate) {
+                    const substrates = item.getAttribute('data-substrate') || '';
+                    if (!substrates.includes(activeFilters.substrate)) visible = false;
+                }
+                if (activeFilters.determinism) {
+                    const determinism = item.getAttribute('data-determinism') || '';
+                    if (determinism !== activeFilters.determinism) visible = false;
+                }
+                if (activeFilters.exactness) {
+                    const exactness = item.getAttribute('data-exactness') || '';
+                    if (exactness !== activeFilters.exactness) visible = false;
+                }
+                if (activeFilters.computation_model) {
+                    const models = item.getAttribute('data-computation_model') || '';
+                    if (!models.includes(activeFilters.computation_model)) visible = false;
+                }
+
+                // Check text query
+                if (textQuery) {
+                    const searchText = [
+                        item.getAttribute('data-name'),
+                        item.getAttribute('data-realizes'),
+                        item.getAttribute('data-description')
+                    ].join(' ').toLowerCase();
+                    if (!searchText.includes(textQuery.toLowerCase())) visible = false;
+                }
+
+                item.style.display = visible ? 'block' : 'none';
+                if (visible) visibleCount++;
+            });
+
+            document.getElementById('count').textContent = `${visibleCount} / {{ systems|length }} systems`;
+        }
+
+        document.getElementById('reset-all').onclick = () => {
+            Object.keys(activeFilters).forEach(k => activeFilters[k] = '');
+            document.getElementById('filter-text').value = '';
+            textQuery = '';
+            buildFilters();
+            render();
+        };
+
+        document.getElementById('filter-text').oninput = e => {
+            textQuery = e.target.value;
+            render();
+        };
+
+        // Initialize
+        buildFilters();
+        render();
+    </script>
+</div>
+{% endblock %}
