@@ -64,6 +64,17 @@ def get_db_connection():
     finally:
         conn.close()
 
+def _parse_json_field(value: Optional[str]) -> Optional[Any]:
+    if value is None:
+        return None
+    stripped = value.strip()
+    if stripped == "":
+        return None
+    try:
+        return json.loads(value)
+    except json.JSONDecodeError:
+        return value
+
 def get_system(system_id: str) -> Optional[Dict[str, Any]]:
     """Get a system by ID with its substrates and examples."""
     with get_db_connection() as conn:
@@ -92,12 +103,10 @@ def get_system(system_id: str) -> Optional[Dict[str, Any]]:
         system['examples'] = [dict(row) for row in examples]
 
         # Parse JSON fields
-        if system['computation_model']:
-            system['computation_model'] = json.loads(system['computation_model'])
+        system['computation_model'] = _parse_json_field(system['computation_model'])
 
         for example in system['examples']:
-            if example['operations']:
-                example['operations'] = json.loads(example['operations'])
+            example['operations'] = _parse_json_field(example['operations'])
             # Add thumbnail URL for YouTube videos
             if example['url']:
                 example['thumbnail_url'] = get_youtube_thumbnail(example['url'])
@@ -125,8 +134,7 @@ def get_systems_by_substrate(substrate_id: str) -> List[Dict[str, Any]]:
         result = []
         for system in systems:
             system_dict = dict(system)
-            if system_dict['computation_model']:
-                system_dict['computation_model'] = json.loads(system_dict['computation_model'])
+            system_dict['computation_model'] = _parse_json_field(system_dict['computation_model'])
             result.append(system_dict)
 
         return result
@@ -138,8 +146,7 @@ def get_all_systems() -> List[Dict[str, Any]]:
         result = []
         for system in systems:
             system_dict = dict(system)
-            if system_dict['computation_model']:
-                system_dict['computation_model'] = json.loads(system_dict['computation_model'])
+            system_dict['computation_model'] = _parse_json_field(system_dict['computation_model'])
             result.append(system_dict)
         return result
 
@@ -170,8 +177,7 @@ def get_systems_by_property(property_name: str, property_value: str) -> List[Dic
         result = []
         for system in systems:
             system_dict = dict(system)
-            if system_dict['computation_model']:
-                system_dict['computation_model'] = json.loads(system_dict['computation_model'])
+            system_dict['computation_model'] = _parse_json_field(system_dict['computation_model'])
             result.append(system_dict)
 
         return result
@@ -184,9 +190,13 @@ def get_unique_property_values(property_name: str) -> List[str]:
             systems = conn.execute("SELECT computation_model FROM systems WHERE computation_model IS NOT NULL").fetchall()
             values = set()
             for row in systems:
-                if row[0]:
-                    models = json.loads(row[0])
-                    values.update(models)
+                parsed = _parse_json_field(row[0])
+                if parsed is None:
+                    continue
+                if isinstance(parsed, list):
+                    values.update(parsed)
+                else:
+                    values.add(parsed)
             return sorted(list(values))
         else:
             # For regular string fields
