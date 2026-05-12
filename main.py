@@ -49,7 +49,8 @@ async def index(request: Request, filter: str = None, value: str = None):
 
 @app.get("/categories", response_class=HTMLResponse)
 async def categories_page(request: Request):
-    substrates = database.get_all_substrates()
+    substrate_categories = database.get_substrate_categories()
+    realization_categories = database.get_realization_categories()
     property_keys = ["determinism", "reversibility", "exactness", "realization_type", "computation_model"]
     property_display = {
         "determinism": "Determinism",
@@ -72,7 +73,8 @@ async def categories_page(request: Request):
         request=request,
         name="categories.html",
         context={
-            "substrates": substrates,
+            "substrate_categories": substrate_categories,
+            "realization_categories": realization_categories,
             "properties": properties
         }
     )

@@ -48,6 +48,51 @@ def init_database():
             scale_category TEXT,
             energy_per_operation TEXT
         );
+
+        CREATE VIEW IF NOT EXISTS substrate_category_summary AS
+        SELECT
+            s.id,
+            s.name,
+            s.description,
+            COUNT(ss.system_id) AS system_count
+        FROM substrates s
+        JOIN system_substrates ss ON s.id = ss.substrate_id
+        GROUP BY s.id, s.name, s.description
+        ORDER BY s.name;
+
+        CREATE VIEW IF NOT EXISTS systems_with_realization_category AS
+        SELECT
+            s.*,
+            CASE
+                WHEN lower(s.realization_type) LIKE '%variational%' THEN 'Variational'
+                WHEN lower(s.realization_type) LIKE '%statistical%' THEN 'Statistical'
+                WHEN lower(s.realization_type) LIKE '%stochastic%' THEN 'Statistical'
+                WHEN lower(s.realization_type) LIKE '%probabilistic%' THEN 'Statistical'
+                WHEN lower(s.realization_type) LIKE '%thermal%' THEN 'Statistical'
+                WHEN lower(s.realization_type) LIKE '%analog%' THEN 'Statistical'
+                WHEN lower(s.realization_type) LIKE '%anneal%' THEN 'Statistical'
+                ELSE 'Procedural'
+            END AS realization_category
+        FROM systems s;
+
+        CREATE VIEW IF NOT EXISTS realization_category_summary AS
+        SELECT
+            realization_category AS name,
+            COUNT(*) AS system_count,
+            CASE realization_category
+                WHEN 'Statistical' THEN 'Systems driven by probability, noise, or statistical methods.'
+                WHEN 'Variational' THEN 'Systems that rely on variational optimization or quantum-inspired tuning.'
+                ELSE 'Deterministic, procedural CMOS/logic realizations (cores, GPUs, ASICs, etc.).'
+            END AS description
+        FROM systems_with_realization_category
+        WHERE realization_category IS NOT NULL
+        GROUP BY realization_category
+        ORDER BY CASE realization_category
+            WHEN 'Statistical' THEN 1
+            WHEN 'Variational' THEN 2
+            WHEN 'Procedural' THEN 3
+            ELSE 99
+        END;
     """)
 
     conn.commit()
@@ -159,56 +204,101 @@ def get_all_substrates() -> List[Dict[str, Any]]:
         substrates = conn.execute("SELECT * FROM substrates ORDER BY name").fetchall()
         return [dict(row) for row in substrates]
 
+
+def get_substrate_categories() -> List[Dict[str, Any]]:
+    with get_db_connection() as conn:
+        rows = conn.execute("SELECT id, name, description, system_count FROM substrate_category_summary ORDER BY name").fetchall()
+        return [dict(row) for row in rows]
+
+
+def get_realization_categories() -> List[Dict[str, Any]]:
+    with get_db_connection() as conn:
+        rows = conn.execute(
+            """
+            SELECT name, description, system_count
+            FROM realization_category_summary
+            ORDER BY CASE name
+                WHEN 'Statistical' THEN 1
+                WHEN 'Variational' THEN 2
+                WHEN 'Procedural' THEN 3
+                ELSE 99
+            END
+            """
+        ).fetchall()
+        return [dict(row) for row in rows]
+
 def get_systems_by_property(property_name: str, property_value: str) -> List[Dict[str, Any]]:
     """Get all systems that have a specific property value."""
-    with get_db_connection() as conn:
-        if property_name == "computation_model":
-            # For JSON array fields, use JSON functions
+    if property_name == "computation_model":
+        with get_db_connection() as conn:
             systems = conn.execute("""
                 SELECT * FROM systems
                 WHERE computation_model LIKE ?
                 ORDER BY name
             """, (f'%"{property_value}"%',)).fetchall()
-        else:
-            # For regular string fields
-            systems = conn.execute(f"""
-                SELECT * FROM systems
-                WHERE {property_name} = ?
-                ORDER BY name
-            """, (property_value,)).fetchall()
-
         result = []
         for system in systems:
             system_dict = dict(system)
             system_dict['computation_model'] = _parse_json_field(system_dict['computation_model'])
             result.append(system_dict)
-
         return result
+
+    if property_name == "realization_type":
+        with get_db_connection() as conn:
+            systems = conn.execute("""
+                SELECT * FROM systems_with_realization_category
+                WHERE realization_category = ?
+                ORDER BY name
+            """, (property_value,)).fetchall()
+        result = []
+        for system in systems:
+            system_dict = dict(system)
+            system_dict['computation_model'] = _parse_json_field(system_dict['computation_model'])
+            result.append(system_dict)
+        return result
+
+    with get_db_connection() as conn:
+        systems = conn.execute(f"""
+            SELECT * FROM systems
+            WHERE {property_name} = ?
+            ORDER BY name
+        """, (property_value,)).fetchall()
+
+    result = []
+    for system in systems:
+        system_dict = dict(system)
+        system_dict['computation_model'] = _parse_json_field(system_dict['computation_model'])
+        result.append(system_dict)
+
+    return result
 
 def get_unique_property_values(property_name: str) -> List[str]:
     """Get all unique values for a given property."""
-    with get_db_connection() as conn:
-        if property_name == "computation_model":
-            # For JSON array fields, we need to extract unique values differently
+    if property_name == "computation_model":
+        # For JSON array fields, we need to extract unique values differently
+        with get_db_connection() as conn:
             systems = conn.execute("SELECT computation_model FROM systems WHERE computation_model IS NOT NULL").fetchall()
-            values = set()
-            for row in systems:
-                parsed = _parse_json_field(row[0])
-                if parsed is None:
-                    continue
-                if isinstance(parsed, list):
-                    values.update(parsed)
-                else:
-                    values.add(parsed)
-            return sorted(list(values))
-        else:
-            # For regular string fields
-            values = conn.execute(f"""
-                SELECT DISTINCT {property_name} FROM systems
-                WHERE {property_name} IS NOT NULL
-                ORDER BY {property_name}
-            """).fetchall()
-            return [row[0] for row in values]
+        values = set()
+        for row in systems:
+            parsed = _parse_json_field(row[0])
+            if parsed is None:
+                continue
+            if isinstance(parsed, list):
+                values.update(parsed)
+            else:
+                values.add(parsed)
+        return sorted(list(values))
+
+    if property_name == "realization_type":
+        return [entry["name"] for entry in get_realization_categories()]
+
+    with get_db_connection() as conn:
+        values = conn.execute(f"""
+            SELECT DISTINCT {property_name} FROM systems
+            WHERE {property_name} IS NOT NULL
+            ORDER BY {property_name}
+        """).fetchall()
+        return [row[0] for row in values]
 
 def get_youtube_thumbnail(url: str) -> Optional[str]:
     """Extract YouTube thumbnail URL from video URL."""
