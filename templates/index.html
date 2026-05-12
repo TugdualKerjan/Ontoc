@@ -1,13 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}Ontology of Computing{% endblock %}
-
 {% block content %}
 <div class="container">
     <div style="display: flex; align-items: top; justify-content: space-between; margin-bottom: 1.5rem;">
         <div>
-            <p class="subtitle" style="margin-bottom: 0;">A comprehensive catalog of computational systems and their
-                physical realizations</p>
+            <p class="subtitle" style="margin-bottom: 0;">Computers aren't just electronic ! You can compute things with
+                <a href="https://internal.tugdual.fr/ontoc/systems/spaghetti-sort">pasta</a>, <a
+                    href="https://internal.tugdual.fr/ontoc/systems/catenary">ropes</a> or <a
+                    href="https://internal.tugdual.fr/ontoc/systems/lightmatter-passage">light</a>. Our goal here is to
+                exhaustively list all
+                systems we currently know about that
+                are capable of computing something.
+            </p>
         </div>
     </div>
 
@@ -21,11 +25,11 @@
             <span class="legend-item"><span class="legend-dot operation"></span>operation</span>
             <span class="legend-item"><span class="legend-dot model"></span>model</span>
         </div>
-        <div style="font-size: 0.78rem;">
+        <!-- <div style="font-size: 0.78rem;">
             <a href="/categories"
                 style="color: #004494; text-decoration: none; border-bottom: 1px solid #a0c4ff; cursor: pointer;">View
                 categories</a>
-        </div>
+        </div> -->
     </div>
 
     <!-- Filter Controls -->
@@ -175,8 +179,8 @@
                     const opts = vocab(dim);
                     container.innerHTML = '';
                     if (opts.length === 0) {
-                    const placeholder = document.createElement('span');
-                    placeholder.className = 'filter-option placeholder tag';
+                        const placeholder = document.createElement('span');
+                        placeholder.className = 'filter-option placeholder tag';
                         placeholder.textContent = 'No options yet';
                         container.appendChild(placeholder);
                         return;

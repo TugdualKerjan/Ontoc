@@ -192,7 +192,3 @@ async def computation_model_page(request: Request, value: str):
             "systems": systems
         }
     )
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8004)
