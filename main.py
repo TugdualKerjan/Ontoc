@@ -47,6 +47,36 @@ async def index(request: Request, filter: str = None, value: str = None):
         }
     )
 
+@app.get("/categories", response_class=HTMLResponse)
+async def categories_page(request: Request):
+    substrates = database.get_all_substrates()
+    property_keys = ["determinism", "reversibility", "exactness", "realization_type", "computation_model"]
+    property_display = {
+        "determinism": "Determinism",
+        "reversibility": "Reversibility",
+        "exactness": "Exactness",
+        "realization_type": "Realization Type",
+        "computation_model": "Computation Model"
+    }
+    properties = []
+    for key in property_keys:
+        values = database.get_unique_property_values(key)
+        if values:
+            properties.append({
+                "key": key,
+                "display": property_display.get(key, key.title()),
+                "values": values
+            })
+
+    return templates.TemplateResponse(
+        request=request,
+        name="categories.html",
+        context={
+            "substrates": substrates,
+            "properties": properties
+        }
+    )
+
 @app.get("/ontoc/systems/{system_id}", response_class=HTMLResponse)
 async def system_page(request: Request, system_id: str):
     system = database.get_system(system_id)
@@ -163,4 +193,4 @@ async def computation_model_page(request: Request, value: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8004)

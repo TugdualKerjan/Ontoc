@@ -64,16 +64,19 @@ def get_db_connection():
     finally:
         conn.close()
 
-def _parse_json_field(value: Optional[str]) -> Optional[Any]:
+def _parse_json_field(value: Optional[str]) -> Optional[List[str]]:
     if value is None:
         return None
-    stripped = value.strip()
-    if stripped == "":
+    trimmed = value.strip()
+    if trimmed == "":
         return None
     try:
-        return json.loads(value)
+        parsed = json.loads(trimmed)
     except json.JSONDecodeError:
-        return value
+        return [trimmed]
+    if isinstance(parsed, list):
+        return parsed
+    return [parsed]
 
 def get_system(system_id: str) -> Optional[Dict[str, Any]]:
     """Get a system by ID with its substrates and examples."""

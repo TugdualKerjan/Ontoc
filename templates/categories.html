@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Categories - Ontology of Computing{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="breadcrumb">
+        <a href="/">Home</a> / <span>Categories</span>
+    </div>
+
+    <section class="categories-page">
+        <header class="category-header">
+            <h1>Categories</h1>
+            <p>Browse substrates and metadata buckets so you can quickly focus on the systems that share the same properties.</p>
+        </header>
+
+        <section class="category-block">
+            <div class="category-block-heading">
+                <h2>Substrates</h2>
+                <p class="category-description">Every physical realization that currently exists in the catalog.</p>
+            </div>
+            <div class="category-pill-grid">
+                {% for substrate in substrates %}
+                <a href="/ontoc/substrates/{{ substrate.id }}" class="pill substrate-pill">{{ substrate.name }}</a>
+                {% endfor %}
+            </div>
+        </section>
+
+        <div class="categories-grid">
+            {% for prop in properties %}
+            <article class="category-block">
+                <div class="category-block-heading">
+                    <h3>{{ prop.display }}</h3>
+                    <p class="category-description">{{ prop.values|length }} values</p>
+                </div>
+                <div class="category-pill-grid">
+                    {% for value in prop.values %}
+                    <a href="/ontoc/{{ prop.key }}/{{ value|urlencode }}" class="pill property-pill">{{ value }}</a>
+                    {% endfor %}
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}
