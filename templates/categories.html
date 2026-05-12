@@ -16,12 +16,33 @@
 
         <section class="category-block">
             <div class="category-block-heading">
-                <h2>Substrates</h2>
-                <p class="category-description">Every physical realization that currently exists in the catalog.</p>
+                <h2>Substrate categories</h2>
+                <p class="category-description">General domains (optical, electrical, quantum, mechanical, etc.) that aggregate the realizations currently cataloged.</p>
             </div>
             <div class="category-pill-grid">
-                {% for substrate in substrates %}
-                <a href="/ontoc/substrates/{{ substrate.id }}" class="pill substrate-pill">{{ substrate.name }}</a>
+                {% for substrate in substrate_categories %}
+                <a href="/ontoc/substrates/{{ substrate.id }}" class="pill substrate-pill" title="{{ substrate.description or '' }}">
+                    <span>{{ substrate.name }}</span>
+                    <small>{{ substrate.system_count }} systems</small>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="category-block">
+            <div class="category-block-heading">
+                <h2>Realization categories</h2>
+                <p class="category-description">High-level realization styles—statistical, variational, procedural—that describe how the system implements computation.</p>
+            </div>
+            <div class="category-pill-grid">
+                {% for category in realization_categories %}
+                <div class="pill realization-pill">
+                    <span>{{ category.name }}</span>
+                    <small>{{ category.system_count }} systems</small>
+                    {% if category.description %}
+                    <p class="category-description">{{ category.description }}</p>
+                    {% endif %}
+                </div>
                 {% endfor %}
             </div>
         </section>
@@ -31,10 +52,10 @@
             <article class="category-block">
                 <div class="category-block-heading">
                     <h3>{{ prop.display }}</h3>
-                    <p class="category-description">{{ prop.values|length }} values</p>
+                    <p class="category-description">{{ prop["values"]|length }} values</p>
                 </div>
                 <div class="category-pill-grid">
-                    {% for value in prop.values %}
+                    {% for value in prop["values"] %}
                     <a href="/ontoc/{{ prop.key }}/{{ value|urlencode }}" class="pill property-pill">{{ value }}</a>
                     {% endfor %}
                 </div>

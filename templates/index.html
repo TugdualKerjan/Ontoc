@@ -30,10 +30,22 @@
 
     <!-- Filter Controls -->
     <div class="filter-section">
-        <div class="filter-row"><span class="dim-label">substrate</span><select id="sel-substrate"></select></div>
-        <div class="filter-row"><span class="dim-label">determinism</span><select id="sel-determinism"></select></div>
-        <div class="filter-row"><span class="dim-label">exactness</span><select id="sel-exactness"></select></div>
-        <div class="filter-row"><span class="dim-label">model</span><select id="sel-computation_model"></select></div>
+        <div class="filter-group" data-dim="substrate">
+            <span class="dim-label">substrate</span>
+            <div class="filter-options" id="filters-substrate"></div>
+        </div>
+        <div class="filter-group" data-dim="determinism">
+            <span class="dim-label">determinism</span>
+            <div class="filter-options" id="filters-determinism"></div>
+        </div>
+        <div class="filter-group" data-dim="exactness">
+            <span class="dim-label">exactness</span>
+            <div class="filter-options" id="filters-exactness"></div>
+        </div>
+        <div class="filter-group" data-dim="computation_model">
+            <span class="dim-label">model</span>
+            <div class="filter-options" id="filters-computation_model"></div>
+        </div>
         <div class="filter-row">
             <input id="filter-text" placeholder="Filter by name, realizes, description…">
             <button class="reset" id="reset-all">✕ reset</button>
@@ -87,103 +99,134 @@
     </div>
 
     <script>
-        const activeFilters = { substrate: '', determinism: '', exactness: '', computation_model: '' };
-        let textQuery = '';
+        document.addEventListener('DOMContentLoaded', () => {
+            const activeFilters = {
+                substrate: new Set(),
+                determinism: new Set(),
+                exactness: new Set(),
+                computation_model: new Set()
+            };
+            let textQuery = '';
 
-        function vocab(dim) {
-            const vals = new Set();
-            document.querySelectorAll('.item').forEach(item => {
-                const value = item.getAttribute(`data-${dim}`);
-                if (value) {
-                    if (value.includes(',')) {
-                        value.split(',').forEach(v => vals.add(v.trim()));
+            const dimensions = ['substrate', 'determinism', 'exactness', 'computation_model'];
+
+            const slugify = value => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+            function vocab(dim) {
+                const vals = new Set();
+                document.querySelectorAll('.item').forEach(item => {
+                    const raw = item.getAttribute(`data-${dim}`);
+                    if (!raw) return;
+                    if (raw.includes(',')) {
+                        raw.split(',').forEach(v => {
+                            const trimmed = v.trim();
+                            if (trimmed) vals.add(trimmed);
+                        });
                     } else {
-                        vals.add(value);
+                        const trimmed = raw.trim();
+                        if (trimmed) vals.add(trimmed);
                     }
-                }
-            });
-            return Array.from(vals).sort();
-        }
-
-        function buildFilters() {
-            ['substrate', 'determinism', 'exactness', 'computation_model'].forEach(dim => {
-                const sel = document.getElementById(`sel-${dim}`);
-                const cur = activeFilters[dim];
-                sel.innerHTML = '<option value="">— all —</option>';
-                vocab(dim).forEach(v => {
-                    const o = document.createElement('option');
-                    o.value = v;
-                    o.textContent = v;
-                    if (v === cur) o.selected = true;
-                    sel.appendChild(o);
                 });
-                sel.classList.toggle('active', !!cur);
-                sel.onchange = () => {
-                    activeFilters[dim] = sel.value;
-                    sel.classList.toggle('active', !!sel.value);
-                    render();
-                };
-            });
-        }
+                return Array.from(vals).sort((a, b) => a.localeCompare(b));
+            }
 
-        function render() {
-            const items = document.querySelectorAll('.item');
-            let visibleCount = 0;
+            function render() {
+                const items = document.querySelectorAll('.item');
+                let visibleCount = 0;
 
-            items.forEach(item => {
-                let visible = true;
+                items.forEach(item => {
+                    let visible = true;
+                    dimensions.forEach(dim => {
+                        const filters = activeFilters[dim];
+                        if (filters.size === 0) return;
+                        const raw = (item.getAttribute(`data-${dim}`) || '').trim();
+                        if (!raw) {
+                            visible = false;
+                            return;
+                        }
+                        if (dim === 'substrate' || dim === 'computation_model') {
+                            const values = raw.split(',').map(v => v.trim()).filter(Boolean);
+                            if (!values.some(v => filters.has(v))) visible = false;
+                        } else if (!filters.has(raw)) {
+                            visible = false;
+                        }
+                    });
 
-                // Check filters
-                if (activeFilters.substrate) {
-                    const substrates = item.getAttribute('data-substrate') || '';
-                    if (!substrates.includes(activeFilters.substrate)) visible = false;
-                }
-                if (activeFilters.determinism) {
-                    const determinism = item.getAttribute('data-determinism') || '';
-                    if (determinism !== activeFilters.determinism) visible = false;
-                }
-                if (activeFilters.exactness) {
-                    const exactness = item.getAttribute('data-exactness') || '';
-                    if (exactness !== activeFilters.exactness) visible = false;
-                }
-                if (activeFilters.computation_model) {
-                    const models = item.getAttribute('data-computation_model') || '';
-                    if (!models.includes(activeFilters.computation_model)) visible = false;
-                }
+                    if (visible && textQuery) {
+                        const searchText = [
+                            item.getAttribute('data-name'),
+                            item.getAttribute('data-realizes'),
+                            item.getAttribute('data-description')
+                        ].join(' ').toLowerCase();
+                        if (!searchText.includes(textQuery.toLowerCase())) visible = false;
+                    }
 
-                // Check text query
-                if (textQuery) {
-                    const searchText = [
-                        item.getAttribute('data-name'),
-                        item.getAttribute('data-realizes'),
-                        item.getAttribute('data-description')
-                    ].join(' ').toLowerCase();
-                    if (!searchText.includes(textQuery.toLowerCase())) visible = false;
-                }
+                    item.style.display = visible ? 'block' : 'none';
+                    if (visible) visibleCount++;
+                });
 
-                item.style.display = visible ? 'block' : 'none';
-                if (visible) visibleCount++;
-            });
+                document.getElementById('count').textContent = `${visibleCount} / {{ systems|length }} systems`;
+            }
 
-            document.getElementById('count').textContent = `${visibleCount} / {{ systems|length }} systems`;
-        }
+            function buildFilters() {
+                dimensions.forEach(dim => {
+                    const container = document.getElementById(`filters-${dim}`);
+                    if (!container) return;
+                    const opts = vocab(dim);
+                    container.innerHTML = '';
+                    if (opts.length === 0) {
+                    const placeholder = document.createElement('span');
+                    placeholder.className = 'filter-option placeholder tag';
+                        placeholder.textContent = 'No options yet';
+                        container.appendChild(placeholder);
+                        return;
+                    }
 
-        document.getElementById('reset-all').onclick = () => {
-            Object.keys(activeFilters).forEach(k => activeFilters[k] = '');
-            document.getElementById('filter-text').value = '';
-            textQuery = '';
+                    opts.forEach(value => {
+                        const pill = document.createElement('button');
+                        pill.type = 'button';
+                        pill.classList.add('filter-option', 'tag', `${dim}-filter-option`);
+                        pill.dataset.value = value;
+                        pill.id = `filter-${dim}-${slugify(value) || Math.random().toString(36).slice(2)}`;
+                        if (dim === 'substrate') pill.classList.add('substrate');
+                        if (dim === 'determinism') pill.classList.add('determinism');
+                        if (dim === 'exactness') pill.classList.add('exactness');
+                        if (dim === 'computation_model') pill.classList.add('model');
+                        pill.textContent = value;
+                        if (activeFilters[dim].has(value)) {
+                            pill.classList.add('active');
+                        }
+                        pill.onclick = () => {
+                            if (activeFilters[dim].has(value)) {
+                                activeFilters[dim].delete(value);
+                                pill.classList.remove('active');
+                            } else {
+                                activeFilters[dim].add(value);
+                                pill.classList.add('active');
+                            }
+                            render();
+                        };
+                        container.appendChild(pill);
+                    });
+                });
+            }
+
+            document.getElementById('reset-all').onclick = () => {
+                Object.values(activeFilters).forEach(set => set.clear());
+                document.getElementById('filter-text').value = '';
+                textQuery = '';
+                buildFilters();
+                render();
+            };
+
+            document.getElementById('filter-text').oninput = e => {
+                textQuery = e.target.value;
+                render();
+            };
+
             buildFilters();
             render();
-        };
-
-        document.getElementById('filter-text').oninput = e => {
-            textQuery = e.target.value;
-            render();
-        };
-
-        // Initialize
-        buildFilters();
-        render();
+        });
     </script>
 </div>
 {% endblock %}

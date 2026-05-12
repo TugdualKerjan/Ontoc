@@ -49,21 +49,25 @@ def init_database():
             energy_per_operation TEXT
         );
 
-        CREATE VIEW IF NOT EXISTS substrate_category_summary AS
-        SELECT
-            s.id,
-            s.name,
-            s.description,
-            COUNT(ss.system_id) AS system_count
-        FROM substrates s
-        JOIN system_substrates ss ON s.id = ss.substrate_id
-        GROUP BY s.id, s.name, s.description
-        ORDER BY s.name;
+        DROP VIEW IF EXISTS substrate_category_summary;
+        DROP VIEW IF EXISTS systems_with_realization_category;
+        DROP VIEW IF EXISTS realization_category_summary;
 
-        CREATE VIEW IF NOT EXISTS systems_with_realization_category AS
-        SELECT
-            s.*,
-            CASE
+        CREATE VIEW substrate_category_summary AS
+            SELECT
+                s.id,
+                s.name,
+                s.description,
+                COUNT(ss.system_id) AS system_count
+            FROM substrates s
+            JOIN system_substrates ss ON s.id = ss.substrate_id
+            GROUP BY s.id, s.name, s.description
+            ORDER BY s.name;
+
+        CREATE VIEW systems_with_realization_category AS
+            SELECT
+                s.*,
+                CASE
                 WHEN lower(s.realization_type) LIKE '%variational%' THEN 'Variational'
                 WHEN lower(s.realization_type) LIKE '%statistical%' THEN 'Statistical'
                 WHEN lower(s.realization_type) LIKE '%stochastic%' THEN 'Statistical'
@@ -75,9 +79,9 @@ def init_database():
             END AS realization_category
         FROM systems s;
 
-        CREATE VIEW IF NOT EXISTS realization_category_summary AS
-        SELECT
-            realization_category AS name,
+        CREATE VIEW realization_category_summary AS
+            SELECT
+                realization_category AS name,
             COUNT(*) AS system_count,
             CASE realization_category
                 WHEN 'Statistical' THEN 'Systems driven by probability, noise, or statistical methods.'
@@ -191,10 +195,24 @@ def get_all_systems() -> List[Dict[str, Any]]:
     """Get all systems."""
     with get_db_connection() as conn:
         systems = conn.execute("SELECT * FROM systems ORDER BY name").fetchall()
+        substrate_rows = conn.execute("""
+            SELECT ss.system_id, s.id, s.name, s.description
+            FROM system_substrates ss
+            JOIN substrates s ON s.id = ss.substrate_id
+        """).fetchall()
+        substrate_map: Dict[str, List[Dict[str, Any]]] = {}
+        for row in substrate_rows:
+            substrate_map.setdefault(row['system_id'], []).append({
+                'id': row['id'],
+                'name': row['name'],
+                'description': row['description']
+            })
+
         result = []
         for system in systems:
             system_dict = dict(system)
             system_dict['computation_model'] = _parse_json_field(system_dict['computation_model'])
+            system_dict['substrates'] = substrate_map.get(system_dict['id'], [])
             result.append(system_dict)
         return result
 
